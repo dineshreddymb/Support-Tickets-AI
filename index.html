@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .button-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+        .button-secondary:hover {
+            background: #efefef;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .result-content {
+            color: #333;
+            line-height: 1.6;
+        }
+        .result-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+        .success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+        .count-box {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .anomaly-list {
+            list-style: none;
+        }
+        .anomaly-list li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #ff6b6b;
+        }
+        .anomaly-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Support Tickets AI</h1>
+        <p class="subtitle">Ask natural language questions about your support tickets or view anomalies</p>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('query')">🔍 Query</button>
+            <button class="tab-button" onclick="switchTab('anomalies')">⚠️ Anomalies</button>
+        </div>
+
+        <!-- Query Section -->
+        <div id="query-tab" class="section">
+            <div class="section-title">Ask a Question</div>
+            <div class="form-group">
+                <input type="text" id="question" placeholder="e.g., How many critical tickets are unresolved?" />
+                <button onclick="askQuestion()">Ask</button>
+            </div>
+            <div class="loading" id="query-loading">
+                <span class="spinner"></span>Processing...
+            </div>
+            <div class="result" id="query-result"></div>
+        </div>
+
+        <!-- Anomalies Section -->
+        <div id="anomalies-tab" class="section" style="display: none;">
+            <div class="section-title">System Anomalies</div>
+            <button onclick="fetchAnomalies()" class="button-secondary">Load Anomalies</button>
+            <div class="loading" id="anomalies-loading">
+                <span class="spinner"></span>Loading anomalies...
+            </div>
+            <div class="result" id="anomalies-result"></div>
+        </div>
+
+        <!-- Example Queries -->
+        <div class="section">
+            <div class="section-title">💡 Example Queries</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
+                <div class="result-item" style="cursor: pointer;" onclick="setQuestion('How many tickets are unresolved?')">
+                    How many tickets are unresolved?
+                </div>
+                <div class="result-item" style="cursor: pointer;" onclick="setQuestion('How many critical tickets are unresolved?')">
+                    How many critical tickets are unresolved?
+                </div>
+                <div class="result-item" style="cursor: pointer;" onclick="setQuestion('Which agent has the lowest customer rating?')">
+                    Which agent has the lowest customer rating?
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        function switchTab(tab) {
+            // Hide all tabs
+            document.getElementById('query-tab').style.display = 'none';
+            document.getElementById('anomalies-tab').style.display = 'none';
+            
+            // Show selected tab
+            document.getElementById(tab + '-tab').style.display = 'block';
+            
+            // Update active button
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function setQuestion(q) {
+            document.getElementById('question').value = q;
+            document.querySelectorAll('.tab-button')[0].click();
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value.trim();
+            if (!question) {
+                showResult('query-result', 'Please enter a question', true);
+                return;
+            }
+
+            showLoading('query-loading', true);
+            try {
+                const response = await fetch(`${API_BASE}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                let html = '<div class="result-content">';
+                if (data.count !== undefined) {
+                    html += `<div class="count-box">${data.count} tickets</div>`;
+                } else if (data.result) {
+                    html += '<table style="width: 100%; border-collapse: collapse;">';
+                    data.result.forEach(row => {
+                        html += '<tr><td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">';
+                        html += Object.values(row).join(' | ');
+                        html += '</td></tr>';
+                    });
+                    html += '</table>';
+                } else if (data.items) {
+                    data.items.forEach(item => {
+                        html += `<div class="result-item">${JSON.stringify(item, null, 2)}</div>`;
+                    });
+                } else if (data.preview) {
+                    html += `<div class="result-item"><pre>${JSON.stringify(data.preview.slice(0, 3), null, 2)}</pre></div>`;
+                }
+                html += '</div>';
+                
+                showResult('query-result', html, false);
+            } catch (error) {
+                showResult('query-result', `Error: ${error.message}`, true);
+            } finally {
+                showLoading('query-loading', false);
+            }
+        }
+
+        async function fetchAnomalies() {
+            showLoading('anomalies-loading', true);
+            try {
+                const response = await fetch(`${API_BASE}/anomalies`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                let html = '<div class="result-content">';
+                
+                if (data.slow_resolution && data.slow_resolution.length > 0) {
+                    html += '<div style="margin-bottom: 20px;">';
+                    html += '<h3 style="color: #ff6b6b; margin-bottom: 10px;">🐌 Slow Resolution Tickets</h3>';
+                    html += '<ul class="anomaly-list">';
+                    data.slow_resolution.forEach(ticket => {
+                        html += `<li>
+                            <span class="anomaly-badge">Slow</span>
+                            <strong>${ticket.ticket_id}</strong> - 
+                            Resolution time: ${ticket.resolution_time_hrs ? ticket.resolution_time_hrs.toFixed(1) : 'N/A'} hrs
+                        </li>`;
+                    });
+                    html += '</ul></div>';
+                } else {
+                    html += '<p style="color: #999;">✅ No slow resolution tickets detected</p>';
+                }
+
+                if (data.old_unresolved_high_priority && data.old_unresolved_high_priority.length > 0) {
+                    html += '<div>';
+                    html += '<h3 style="color: #ff6b6b; margin-bottom: 10px;">🚨 Old Unresolved High-Priority Tickets</h3>';
+                    html += '<ul class="anomaly-list">';
+                    data.old_unresolved_high_priority.forEach(ticket => {
+                        html += `<li>
+                            <span class="anomaly-badge">Urgent</span>
+                            <strong>${ticket.ticket_id}</strong> - 
+                            Priority: ${ticket.priority}, Status: ${ticket.status}
+                        </li>`;
+                    });
+                    html += '</ul></div>';
+                } else {
+                    html += '<p style="color: #999;">✅ No old unresolved high-priority tickets found</p>';
+                }
+
+                html += '</div>';
+                showResult('anomalies-result', html, false);
+            } catch (error) {
+                showResult('anomalies-result', `Error: ${error.message}`, true);
+            } finally {
+                showLoading('anomalies-loading', false);
+            }
+        }
+
+        function showLoading(id, show) {
+            document.getElementById(id).style.display = show ? 'block' : 'none';
+        }
+
+        function showResult(id, html, isError) {
+            const resultDiv = document.getElementById(id);
+            resultDiv.innerHTML = html;
+            resultDiv.className = `result show ${isError ? 'error' : 'success'}`;
+        }
+
+        // Auto-focus on load
+        window.addEventListener('load', () => {
+            document.getElementById('question').focus();
+        });
+    </script>
+</body>
+</html>
